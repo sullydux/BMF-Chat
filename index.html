@@ -148,6 +148,7 @@
       <div id="galleryView"></div>
     </div>
   </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script>
@@ -162,40 +163,50 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const usernames = ["BMF"];
-    const passwords = ["Derby123"];
-    let nickname = null;
 
-    const imageNames = [
-        "test image"
-    ];
-    const imagePaths = [
-      "earth.jpg"
-    ];
+    const usernames = ["BMF", "Viewer"];
+    const passwords = ["Derby123", "Guest123"];
+    let nickname = null;
+    let userRole = "viewer"; // default
+
+    const imageNames = ["test image", "Secret Map"];
+    const imagePaths = ["earth.jpg", "secret.jpg"];
+    const imageSecrets = [false, true]; // second image is secret
 
     function login() {
       const u = document.getElementById("username").value;
       const p = document.getElementById("password").value;
       const nick = document.getElementById("nickname").value.trim();
-      for (let i = 0; i < usernames.length; i++) {
-        if (u === usernames[i] && p === passwords[i]) {
-          nickname = nick || "Anonymous";
-          document.getElementById("loginModal").style.display = "none";
-          document.getElementById("chatContainer").style.display = "block";
-          listenForMessages();
-          loadGallery();
-          return;
-        }
+
+      if (u === "BMF" && p === "Derby123") {
+        userRole = "admin";
+      } else if (u === "Viewer" && p === "Guest123") {
+        userRole = "viewer";
+      } else {
+        alert("Wrong login");
+        return;
       }
-      alert("Wrong login");
+
+      nickname = nick || "Anonymous";
+      document.getElementById("loginModal").style.display = "none";
+      document.getElementById("chatContainer").style.display = "block";
+      listenForMessages();
+      loadGallery();
     }
 
     function sendMessage() {
-      const msg = document.getElementById("msgInput").value;
-      if (msg.trim() && nickname) {
-        db.ref("messages").push({ user: nickname, text: msg });
-        document.getElementById("msgInput").value = "";
-      }
+      const msg = document.getElementById("msgInput").value.trim();
+      if (!msg || !nickname) return;
+
+      const isSecret = userRole === "admin" && msg.startsWith("/secret ");
+
+      db.ref("messages").push({
+        user: nickname,
+        text: isSecret ? msg.replace("/secret ", "") : msg,
+        secret: isSecret
+      });
+
+      document.getElementById("msgInput").value = "";
     }
 
     function listenForMessages() {
@@ -203,10 +214,33 @@
         const msg = snap.val();
         const div = document.createElement("div");
         div.className = "message";
-        div.textContent = `${msg.user}: ${msg.text}`;
+
+        if (msg.secret && userRole === "viewer") {
+          div.textContent = "TOP SECRET 🔒 Access Denied";
+        } else {
+          div.textContent = `${msg.user}: ${msg.text}`;
+        }
+
         document.getElementById("messages").appendChild(div);
         document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
       });
+    }
+
+    function loadGallery() {
+      const gallery = document.getElementById("galleryView");
+      gallery.innerHTML = "";
+      for (let i = 0; i < imageNames.length; i++) {
+        const div = document.createElement("div");
+        div.className = "image-entry";
+
+        if (imageSecrets[i] && userRole === "viewer") {
+          div.innerHTML = `<strong>TOP SECRET 🔒</strong><br><em>Access Denied</em>`;
+        } else {
+          div.innerHTML = `<strong>${imageNames[i]}</strong><br><img src="${imagePaths[i]}" alt="${imageNames[i]}" />`;
+        }
+
+        gallery.appendChild(div);
+      }
     }
 
     function switchTab(tab) {
@@ -219,17 +253,6 @@
         document.querySelector('.tab:nth-child(2)').classList.add("active");
         document.getElementById("galleryPanel").classList.add("active");
         loadGallery();
-      }
-    }
-
-    function loadGallery() {
-      const gallery = document.getElementById("galleryView");
-      gallery.innerHTML = "";
-      for (let i = 0; i < imageNames.length; i++) {
-        const div = document.createElement("div");
-        div.className = "image-entry";
-        div.innerHTML = `<strong>${imageNames[i]}</strong><br><img src="${imagePaths[i]}" alt="${imageNames[i]}" />`;
-        gallery.appendChild(div);
       }
     }
 

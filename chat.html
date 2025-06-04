@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BMF Chat</title>
+  <link rel="icon" href="Icon.png" type="image/png">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    #loginBtn { display: none; }
+    #loginModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid #00ffff55;
+      padding: 30px;
+      border-radius: 12px;
+      width: 300px;
+      box-shadow: 0 0 20px #00ffff88;
+    }
+    input {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      border: none;
+      background: #1f2f3f;
+      color: white;
+    }
+    button {
+      background-color: #00ffff33;
+      color: #00ffff;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    button:hover {
+      background-color: #00ffff55;
+    }
+    .container {
+      max-width: 700px;
+      margin: 100px auto;
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      display: none;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      cursor: pointer;
+      background-color: #0f202799;
+      border-radius: 8px;
+      margin-right: 10px;
+      transition: background 0.3s;
+    }
+    .tab.active {
+      background-color: #00ffff33;
+      color: #00ffff;
+      font-weight: bold;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    #messages {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    .message {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 10px;
+      border-radius: 10px;
+      margin: 6px 0;
+    }
+    .msg-form {
+      display: flex;
+      gap: 10px;
+    }
+    #msgInput {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background-color: #2a3f50;
+      color: white;
+    }
+    .image-entry {
+      background: rgba(255,255,255,0.08);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .image-entry a { color: #00ffff; }
+    .image-entry img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #00ffffcc;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginModal">
+    <h3>Login to <strong>BMF Chat</strong></h3>
+    <input id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <input id="nickname" placeholder="Chat Nickname" />
+    <button onclick="login()">Enter</button>
+  </div>
+  <div class="container" id="chatContainer">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('chat')">Chat</div>
+      <div class="tab" onclick="switchTab('gallery')">Gallery</div>
+    </div>
+    <div class="panel active" id="chatPanel">
+      <h2>BMF Chat</h2>
+      <div id="messages"></div>
+      <div class="msg-form">
+        <input type="text" id="msgInput" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+    <div class="panel" id="galleryPanel">
+      <h2>BMF Gallery</h2>
+      <div id="galleryView"></div>
+    </div>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRxDIVNShoiGhg9GlXF9iPL_ZeoVwIO9g",
+      authDomain: "chat-eb9ec.firebaseapp.com",
+      projectId: "chat-eb9ec",
+      storageBucket: "chat-eb9ec.appspot.com",
+      messagingSenderId: "777685379385",
+      appId: "1:777685379385:web:6c9d5b0f506a0d805ae0e8",
+      databaseURL: "https://chat-eb9ec-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const usernames = ["BMF"];
+    const passwords = ["Derby123"];
+    let nickname = null;
+
+    const imageNames = [
+        "test image"
+    ];
+    const imagePaths = [
+      "earth.jpg"
+    ];
+
+    function login() {
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
+      const nick = document.getElementById("nickname").value.trim();
+      for (let i = 0; i < usernames.length; i++) {
+        if (u === usernames[i] && p === passwords[i]) {
+          nickname = nick || "Anonymous";
+          document.getElementById("loginModal").style.display = "none";
+          document.getElementById("chatContainer").style.display = "block";
+          listenForMessages();
+          loadGallery();
+          return;
+        }
+      }
+      alert("Wrong login");
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById("msgInput").value;
+      if (msg.trim() && nickname) {
+        db.ref("messages").push({ user: nickname, text: msg });
+        document.getElementById("msgInput").value = "";
+      }
+    }
+
+    function listenForMessages() {
+      db.ref("messages").on("child_added", snap => {
+        const msg = snap.val();
+        const div = document.createElement("div");
+        div.className = "message";
+        div.textContent = `${msg.user}: ${msg.text}`;
+        document.getElementById("messages").appendChild(div);
+        document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+      });
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      if (tab === "chat") {
+        document.querySelector('.tab:nth-child(1)').classList.add("active");
+        document.getElementById("chatPanel").classList.add("active");
+      } else if (tab === "gallery") {
+        document.querySelector('.tab:nth-child(2)').classList.add("active");
+        document.getElementById("galleryPanel").classList.add("active");
+        loadGallery();
+      }
+    }
+
+    function loadGallery() {
+      const gallery = document.getElementById("galleryView");
+      gallery.innerHTML = "";
+      for (let i = 0; i < imageNames.length; i++) {
+        const div = document.createElement("div");
+        div.className = "image-entry";
+        div.innerHTML = `<strong>${imageNames[i]}</strong><br><img src="${imagePaths[i]}" alt="${imageNames[i]}" />`;
+        gallery.appendChild(div);
+      }
+    }
+
+    window.onload = () => {
+      document.getElementById("loginModal").style.display = "block";
+    };
+  </script>
+</body>
+</html>

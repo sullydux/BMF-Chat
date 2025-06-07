@@ -9,13 +9,45 @@
     * {
       box-sizing: border-box;
     }
-    body {
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
       color: #ffffff;
-      margin: 0;
-      padding: 0;
     }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    footer {
+      font-size: 0.8em;
+      color: white;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      text-align: center;
+      animation: fadeIn 1s ease forwards;
+      animation-delay: 1s;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s ease;
+      margin: 0 5px;
+    }
+
+    footer a:hover {
+      color: #00f6e4;
+    }
+
     #loginModal {
       display: none;
       position: fixed;
@@ -30,6 +62,7 @@
       box-shadow: 0 0 20px #00ffff88;
       z-index: 1000;
     }
+
     input {
       display: block;
       margin: 10px auto;
@@ -41,6 +74,7 @@
       color: white;
       font-size: 1em;
     }
+
     button {
       background-color: #00ffff33;
       color: #00ffff;
@@ -51,13 +85,16 @@
       font-size: 1em;
       transition: background-color 0.3s;
     }
+
     button:hover:not(:disabled) {
       background-color: #00ffff55;
     }
+
     button:disabled {
       cursor: not-allowed;
       opacity: 0.5;
     }
+
     .container {
       max-width: 700px;
       margin: 100px auto;
@@ -67,10 +104,12 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       display: none;
     }
+
     .tabs {
       display: flex;
       margin-bottom: 20px;
     }
+
     .tab {
       flex: 1;
       text-align: center;
@@ -82,22 +121,27 @@
       transition: background 0.3s;
       user-select: none;
     }
+
     .tab.active {
       background-color: #00ffff33;
       color: #00ffff;
       font-weight: bold;
     }
+
     .panel {
       display: none;
     }
+
     .panel.active {
       display: block;
     }
+
     #messages {
       max-height: 300px;
       overflow-y: auto;
       margin-bottom: 20px;
     }
+
     .message {
       background: rgba(255, 255, 255, 0.08);
       padding: 10px;
@@ -105,11 +149,13 @@
       margin: 6px 0;
       word-wrap: break-word;
     }
+
     .msg-form {
       display: flex;
       gap: 10px;
       align-items: center;
     }
+
     #msgInput {
       flex: 1;
       padding: 10px;
@@ -119,6 +165,7 @@
       color: white;
       font-size: 1em;
     }
+
     #secretCheckboxLabel {
       display: flex;
       align-items: center;
@@ -127,24 +174,29 @@
       cursor: pointer;
       user-select: none;
     }
+
     #secretCheckbox {
       margin-right: 6px;
       cursor: pointer;
     }
+
     .image-entry {
       background: rgba(255, 255, 255, 0.08);
       padding: 10px;
       border-radius: 10px;
       margin-bottom: 10px;
     }
+
     .image-entry a {
       color: #00ffff;
     }
+
     .image-entry img {
       max-width: 100%;
       border-radius: 8px;
       margin-top: 8px;
     }
+
     h2 {
       text-align: center;
       margin-bottom: 10px;
@@ -153,41 +205,55 @@
   </style>
 </head>
 <body>
-  <div id="loginModal">
-    <h3>Login to <strong>BMF Chat</strong></h3>
-    <input id="username" placeholder="Username" autocomplete="off" />
-    <input type="password" id="password" placeholder="Password" autocomplete="off" />
-    <input id="nickname" placeholder="Chat Nickname (optional)" autocomplete="off" />
-    <button id="loginBtn" onclick="login()">Enter</button>
-  </div>
-
-  <div class="container" id="chatContainer">
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('chat')">Chat</div>
-      <div class="tab" onclick="switchTab('gallery')">Gallery</div>
+  <main>
+    <div id="loginModal">
+      <h3>Login to <strong>BMF Chat</strong></h3>
+      <input id="username" placeholder="Username" autocomplete="off" />
+      <input type="password" id="password" placeholder="Password" autocomplete="off" />
+      <input id="nickname" placeholder="Chat Nickname (optional)" autocomplete="off" />
+      <button id="loginBtn" onclick="login()">Enter</button>
     </div>
 
-    <div class="panel active" id="chatPanel">
-      <h2>BMF Chat</h2>
-      <div id="messages"></div>
-      <div class="msg-form">
-        <input type="text" id="msgInput" placeholder="Type a message..." />
-        <label id="secretCheckboxLabel" style="display:none;">
-          <input type="checkbox" id="secretCheckbox" />Mark as Top Secret </label>
-        <button id="sendBtn" onclick="sendMessage()">Send</button>
+    <div class="container" id="chatContainer">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('chat')">Chat</div>
+        <div class="tab" onclick="switchTab('gallery')">Gallery</div>
+      </div>
+
+      <div class="panel active" id="chatPanel">
+        <h2>BMF Chat</h2>
+        <div id="messages"></div>
+        <div class="msg-form">
+          <input type="text" id="msgInput" placeholder="Type a message..." />
+          <label id="secretCheckboxLabel" style="display:none;">
+            <input type="checkbox" id="secretCheckbox" />Mark as Top Secret
+          </label>
+          <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+
+      <div class="panel" id="galleryPanel">
+        <h2>BMF Gallery</h2>
+        <div id="galleryView"></div>
       </div>
     </div>
+  </main>
 
-    <div class="panel" id="galleryPanel">
-      <h2>BMF Gallery</h2>
-      <div id="galleryView"></div>
-    </div>
+  <footer>
+  <div>
+    <div style="font-size: 1.2em;">
+    Site by<a href="https://chat.openai.com/" target="_blank">ChatGPT</a>|
+     Hosted on<a href="https://github.com/sullydux/Puzzzle-A-Day" target="_blank">GitHub</a>
   </div>
+  <div>
+    <div style="font-size: 1.2em;">
+    <a href="https://sullydux.github.io/SullyForge/" target="_blank">Play my other Games</a>
+  </div>
+</footer>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script>
-    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBRxDIVNShoiGhg9GlXF9iPL_ZeoVwIO9g",
       authDomain: "chat-eb9ec.firebaseapp.com",
@@ -200,13 +266,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // User data
     const USERS = {
       BMF: { password: "Derby123", role: "admin" },
       Viewer: { password: "Guest123", role: "viewer" }
     };
 
-    // Images with secret flag
     const imageData = [
       { name: "The trully best meme invented", path: "GOD.png", secret: false },
       { name: "The fake sceince note card", path: "Fake.svg", secret: false },
@@ -229,11 +293,9 @@
       userRole = USERS[u].role;
       nickname = nickInput || u;
 
-      // Hide login modal and show chat container
       document.getElementById("loginModal").style.display = "none";
       document.getElementById("chatContainer").style.display = "block";
 
-      // Show/hide secret checkbox & enable/disable input based on role
       if (userRole === "admin") {
         document.getElementById("secretCheckboxLabel").style.display = "flex";
         document.getElementById("msgInput").disabled = false;
@@ -277,7 +339,7 @@
       const messagesDiv = document.getElementById("messages");
       messagesDiv.innerHTML = "";
 
-      db.ref("messages").off(); // Remove previous listeners if any
+      db.ref("messages").off();
 
       db.ref("messages").orderByChild("timestamp").on("child_added", (snapshot) => {
         const msg = snapshot.val();
@@ -329,7 +391,6 @@
       }
     }
 
-    // Show login modal on page load
     window.onload = () => {
       document.getElementById("loginModal").style.display = "block";
     };
